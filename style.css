@@ -3,7 +3,7 @@
     --secondary-color: #b0a494;
     --dark-color: #a0a585;
     --light-color: #e8e7d5;
-    --text-color: #333;
+    --text-color: #724323;
     --white: #ffffff;
     --gray: #e0e0e0;
     --dark-gray: #777;
@@ -60,15 +60,10 @@ header {
     gap: 8px;
 }
 
-.logo i {
-    font-size: 20px;
-    color: #a1886f; /* لون القمر لو حبيت تغيّره */
+.logo {
+    font-size: 24px;
+    font-weight: bold;
 }
-
-.logo a {
-    text-decoration: none;
-    color: inherit;
-  }
 
 .header-left, .header-right {
     display: flex;
@@ -120,52 +115,73 @@ header {
 
 /* Search Bar */
 .search-container {
+    position: relative;
+}
+
+.search {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 0; /* إزالة الفراغ بين الأيقونة وخانة البحث */
-  }
-  
-  .search-bar {
-    position: relative;
-    width: 0;
-    overflow: hidden;
-    transition: width 0.5s ease;
-  }
-  
-  .search-bar.active {
-    width: 180px; /* توسع مناسب */
-  }
-  
-  .search-bar input {
-    width: 100%;
-    padding: 10px 15px;
-    border: none; /* إزالة التحديد الأسود */
-    border-radius: 25px;
-    background-color: #f1eee8; /* لون ناعم يشبه الخلفية */
-    color: #5b5048; /* لون كتابة هادئ */
-    font-size: 14px;
-    outline: none; /* إلغاء التحديد عند الضغط */
-  }
-  
-  .search-bar button {
-    position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: #5b5048;
-    cursor: pointer;
-  }
-  
-  .search-icon {
-    background-color: #f1eee8; /* نفس لون حقل الإدخال */
-    border: none;
+}
+
+.search-btn {
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    padding: 10px;
-    color: #5b5048; /* لون أيقونة مناسب */
+    background-color: var(--white);
+    color: var(--dark-color);
+    border: none;
     cursor: pointer;
-  }
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.6s ease;
+    z-index: 2;
+}
+
+.search-btn i {
+    font-size: 18px;
+    pointer-events: none;
+}
+
+.search-input-wrapper {
+    position: relative;
+    right: 0;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    transition: width 0.6s ease, opacity 0.6s ease;
+    width: 0;
+    opacity: 0;
+    border-radius: 25px;
+    background-color: var(--light-color);
+    padding-left: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.search-input {
+    border: none;
+    background: transparent;
+    padding: 0 15px 0 0;
+    font-size: 16px;
+    outline: none;
+    color: var(--text-color);
+    height: 100%;
+    width: 200px;
+}
+
+.search.active .search-btn {
+    transform: rotate(360deg);
+}
+
+.search.active .search-input-wrapper {
+    width: 200px;
+    opacity: 1;
+
+    pointer-events: auto;
+}
 
 /* Sidebar Navigation */
 .sidebar-overlay {
@@ -385,19 +401,6 @@ body.sidebar-open .sidebar-overlay {
 .product-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-}
-
-.product-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: var(--primary-color);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    z-index: 1;
 }
 
 .product-image {
@@ -711,7 +714,7 @@ footer {
     margin-top: 2rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     font-size: 0.9rem;
-    color: #aaa;
+    color: #ddd;
 }
 
 /* Animations */
@@ -767,20 +770,13 @@ footer {
 
 @media (max-width: 768px) {
     .header-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: nowrap;
-        position: relative;
+        justify-content: center;
     }
     
     .logo {
-        order: 2;
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
-        width: auto;
-        z-index: 1;
     }
 
     .logo h1 {
@@ -801,40 +797,19 @@ footer {
         margin-left: auto;
     }
     
-    .search-container {
-        position: relative;
-        margin: 0;
+    .search {
+        position: static;
     }
     
-    .search-bar {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: var(--white);
-        padding: 15px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
-        display: none;
-        border-radius: 0;
+    .search.active .search-btn {
+        transform: rotate(360deg);
     }
     
-    .search-bar.active {
-        display: flex !important;
-        animation: fadeInSlideDownMobile 0.4s ease-out;
-    }
-    
-    .search-bar input {
-        width: 100%;
-        padding: 12px 15px;
-        border: 1px solid var(--gray);
-        border-radius: 30px;
+    .search.active .search-input-wrapper {
+        width: 180px;
+        margin-right: 35px;
     }
 
-    .search-bar button {
-        display: none;
-    }
-    
     .search-results {
         position: relative;
         top: 0;
@@ -850,14 +825,6 @@ footer {
         padding: 15px;
         text-align: center;
         color: var(--dark-gray);
-    }
-
-    .search-icon {
-        background: none;
-        border: none;
-        color: var(--dark-color);
-        font-size: 1.2rem;
-        padding: 10px;
     }
     
     .user-icon {
@@ -1850,7 +1817,7 @@ footer {
     overflow-y: auto;
     display: none;
     z-index: 1000;
-    width: 100%; 
+    width: 100%;
 }
 
 .search-result-item {
@@ -1890,9 +1857,10 @@ footer {
     font-weight: bold;
 }
 
-/* Adjust search bar position */
-.search-bar {
-    position: relative;
+.no-results {
+    padding: 15px;
+    text-align: center;
+    color: var(--dark-gray);
 }
 
 @media (max-width: 768px) {
@@ -1901,4 +1869,21 @@ footer {
         left: 15px;
         right: 15px;
     }
+}
+
+.color-circle {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+.product-title-price {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
 }

@@ -10,6 +10,60 @@ const input = document.querySelector('.search-bar input');
 const sortSelect = document.getElementById('sort-by');
 const categorySelect = document.getElementById('category-filter');
 
+// Sample products data
+const products = [
+    {
+        id: 1,
+        name: "Silk Satin Pajama Set",
+        price: 89.99,
+        originalPrice: 109.99,
+        category: "silk",
+        image: "images/silk-pajama1.jpg",
+    },
+    {
+        id: 2,
+        name: "Cotton Floral Pajama Set",
+        price: 49.99,
+        originalPrice: 59.99,
+        category: "cotton",
+        image: "images/cotton-pajama1.jpg",
+    },
+    {
+        id: 3,
+        name: "Lace Trim Pajama Set",
+        price: 65.99,
+        category: "lace",
+        image: "images/lace-pajama1.jpg",
+    },
+    {
+        id: 4,
+        name: "Winter Flannel Pajama Set",
+        price: 79.99,
+        originalPrice: 99.99,
+        category: "cotton",
+        image: "images/winter-pajama1.jpg",
+    },
+    {
+        id: 5,
+        name: "Premium Silk Robe",
+        price: 99.99,
+        category: "silk",
+        image: "images/silk-robe1.jpg"
+    },
+    {
+        id: 6,
+        name: "Organic Cotton Sleep Shirt",
+        price: 39.99,
+        category: "cotton",
+        image: "images/cotton-shirt1.jpg"
+    }
+];
+
+//Create search results container
+const searchResults = document.createElement('div');
+searchResults.className = 'search-results';
+document.querySelector('.search').appendChild(searchResults);
+
 function highlightCurrentPage() {
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     const navLinks = document.querySelectorAll('nav ul li a, .sidebar ul li a');
@@ -25,34 +79,45 @@ function highlightCurrentPage() {
 }
 
 // Initialize the page
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const authTabs = document.querySelectorAll('.auth-tab');
     const authForms = document.querySelectorAll('.auth-form');
-    
+
     if (authTabs.length > 0) {
         authTabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                // Remove active class from all tabs and forms
+            tab.addEventListener('click', function () {
                 authTabs.forEach(t => t.classList.remove('active'));
                 authForms.forEach(f => f.classList.remove('active'));
-                
-                // Add active class to clicked tab
+
                 this.classList.add('active');
-                
-                // Show corresponding form
+
                 const tabName = this.getAttribute('data-tab');
                 document.getElementById(`${tabName}-form`).classList.add('active');
             });
         });
     }
+
+    // ✅ تحديث زر "أضف إلى العربة" في صفحة التفاصيل
+    const detailAddToCartBtn = document.querySelector('.product-detail-container .add-to-cart');
+    const productIdFromURL = new URLSearchParams(window.location.search).get('id');
+
+    if (detailAddToCartBtn) {
+        // تأكيد ربط الحدث
+        detailAddToCartBtn.addEventListener('click', addToCart);
+
+        // ضبط data-id من رابط الصفحة
+        if (productIdFromURL) {
+            detailAddToCartBtn.setAttribute('data-id', productIdFromURL);
+        }
+    }
+
     updateCartCount();
     initEventListeners();
     loadProducts();
     highlightCurrentPage();
     setupQuantityControls();
     initCartPage();
-    
-    // Set category filter from URL if exists
+
     const urlParams = new URLSearchParams(window.location.search);
     const category = urlParams.get('category');
     if (category && categorySelect) {
@@ -72,45 +137,22 @@ function initEventListeners() {
         sidebarOverlay.addEventListener('click', closeMobileMenu);
     }
     
-    // Search icon click
-    if (searchIcon) {
-        searchIcon.addEventListener('click', function(e) {
-            e.stopPropagation();
-            
-            // إغلاق القائمة الجانبية إذا كانت مفتوحة
-            if (sidebar.classList.contains('active')) {
-                closeMobileMenu();
-            }
-            
-            // تبديل حالة شريط البحث
-            searchBar.classList.toggle('active');
-            
-            // التركيز على حقل الإدخال إذا ظهر الشريط
-            if (searchBar.classList.contains('active')) {
-                input.focus();
-            } else {
-                // إخفاء نتائج البحث إذا اختفى الشريط
-                const searchResults = document.querySelector('.search-results');
-                if (searchResults) {
-                    searchResults.style.display = 'none';
-                }
-            }
-        });
+    // Search functionality
+    if (searchInput) {
+        searchInput.addEventListener('input', handleSearchInput);
+        searchInput.addEventListener('focus', showSearchResults);
     }
     
-    // إغلاق شريط البحث عند النقر في أي مكان آخر
+    if (searchBtn) {
+        searchBtn.addEventListener('click', toggleSearch);
+    }
+    
+    // Close search results when clicking outside
     document.addEventListener('click', function(e) {
-        if (!searchBar.contains(e.target) && e.target !== searchIcon) {
-            searchBar.classList.remove('active');
-            const searchResults = document.querySelector('.search-results');
-            if (searchResults) {
-                searchResults.style.display = 'none';
-            }
+        if (!e.target.closest('.search')) {
+            searchResults.style.display = 'none';
         }
     });
-    
-    // Initialize search functionality
-    initSearch();
     
     // Submenu toggle
     submenuItems.forEach(item => {
@@ -158,15 +200,6 @@ function closeMobileMenu() {
     mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
 }
 
-// Toggle search bar with animation
-function toggleSearchBar(e) {
-    e.stopPropagation();
-    searchBar.classList.toggle('active');
-    if (searchBar.classList.contains('active')) {
-        searchBar.querySelector('input').focus();
-    }
-}
-
 // Update cart count
 function updateCartCount() {
     if (cartCount) {
@@ -180,111 +213,50 @@ function updateCartCount() {
 function loadProducts() {
     const productsGrid = document.querySelector('.products-grid');
     if (!productsGrid) return;
-    
-    if (!localStorage.getItem('cart')) {
-        localStorage.setItem('cart', JSON.stringify([]));
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedCategory = urlParams.get('category');
+
+    let filteredProducts = products;
+    if (selectedCategory && selectedCategory !== 'all') {
+        filteredProducts = products.filter(product => product.category === selectedCategory);
     }
 
-    // Sample products data (would normally come from API)
-    const products = [
-        {
-            id: 1,
-            name: "Silk Satin Pajama Set",
-            price: 89.99,
-            originalPrice: 109.99,
-            category: "silk",
-            image: "images/silk-pajama1.jpg",
-            badge: "Bestseller"
-        },
-        {
-            id: 2,
-            name: "Cotton Floral Pajama Set",
-            price: 49.99,
-            originalPrice: 59.99,
-            category: "cotton",
-            image: "images/cotton-pajama1.jpg",
-            badge: "Sale"
-        },
-        {
-            id: 3,
-            name: "Lace Trim Pajama Set",
-            price: 65.99,
-            category: "lace",
-            image: "images/lace-pajama1.jpg",
-            badge: "New"
-        },
-        {
-            id: 4,
-            name: "Winter Flannel Pajama Set",
-            price: 79.99,
-            originalPrice: 99.99,
-            category: "cotton",
-            image: "images/winter-pajama1.jpg",
-            badge: "Limited"
-        },
-        {
-            id: 5,
-            name: "Premium Silk Robe",
-            price: 99.99,
-            category: "silk",
-            image: "images/silk-robe1.jpg"
-        },
-        {
-            id: 6,
-            name: "Organic Cotton Sleep Shirt",
-            price: 39.99,
-            category: "cotton",
-            image: "images/cotton-shirt1.jpg"
-        }
-    ];
-    
-    displayProducts(products);
+    displayProducts(filteredProducts);
 }
 
 // Display products in grid
 function displayProducts(products) {
     const productsGrid = document.querySelector('.products-grid');
     if (!productsGrid) return;
-    
+
     productsGrid.innerHTML = '';
-    
+
     products.forEach(product => {
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
+        productCard.setAttribute('data-id', product.id);
+
         productCard.innerHTML = `
-            ${product.badge ? `<span class="product-badge">${product.badge}</span>` : ''}
             <div class="product-image">
                 <img src="${product.image}" alt="${product.name}">
             </div>
             <div class="product-info">
-                <h3 class="product-title">${product.name}</h3>
-                <div class="product-price">
-                    <div>
-                        ${product.originalPrice ? `<span class="old-price">$${product.originalPrice.toFixed(2)}</span>` : ''}
-                        <span class="price">$${product.price.toFixed(2)}</span>
-                    </div>
-                    <button class="add-to-cart" data-id="${product.id}">
-                        <i class="fas fa-shopping-cart"></i>
-                    </button>
+                <div class="product-title-price">
+                    <h3 class="product-title">${product.name}</h3>
+                    <span class="price">$${product.price.toFixed(2)}</span>
                 </div>
             </div>
         `;
+
         productsGrid.appendChild(productCard);
     });
-    
-    // Add event listeners to new add to cart buttons
-    document.querySelectorAll('.add-to-cart').forEach(button => {
-        button.addEventListener('click', addToCart);
-    });
-    
-    // Add click event to product cards
+
     document.querySelectorAll('.product-card').forEach(card => {
-        card.addEventListener('click', function(e) {
-            if (!e.target.classList.contains('add-to-cart')) {
-                const productId = this.querySelector('.add-to-cart')?.getAttribute('data-id');
-                if (productId) {
-                    window.location.href = `product-detail.html?id=${productId}`;
-                }
+        card.addEventListener('click', function() {
+            const productId = this.getAttribute('data-id');
+            if (productId) {
+                window.location.href = `product-detail.html?id=${productId}`;
             }
         });
     });
@@ -294,68 +266,13 @@ function displayProducts(products) {
 function filterProducts() {
     const sortValue = sortSelect.value;
     const categoryValue = categorySelect.value;
-    
-    // Get all products (in a real app, this would come from your data)
-    const products = [
-        {
-            id: 1,
-            name: "Silk Satin Pajama Set",
-            price: 89.99,
-            originalPrice: 109.99,
-            category: "silk",
-            image: "images/silk-pajama1.jpg",
-            badge: "Bestseller"
-        },
-        {
-            id: 2,
-            name: "Cotton Floral Pajama Set",
-            price: 49.99,
-            originalPrice: 59.99,
-            category: "cotton",
-            image: "images/cotton-pajama1.jpg",
-            badge: "Sale"
-        },
-        {
-            id: 3,
-            name: "Lace Trim Pajama Set",
-            price: 65.99,
-            category: "lace",
-            image: "images/lace-pajama1.jpg",
-            badge: "New"
-        },
-        {
-            id: 4,
-            name: "Winter Flannel Pajama Set",
-            price: 79.99,
-            originalPrice: 99.99,
-            category: "cotton",
-            image: "images/winter-pajama1.jpg",
-            badge: "Limited"
-        },
-        {
-            id: 5,
-            name: "Premium Silk Robe",
-            price: 99.99,
-            category: "silk",
-            image: "images/silk-robe1.jpg"
-        },
-        {
-            id: 6,
-            name: "Organic Cotton Sleep Shirt",
-            price: 39.99,
-            category: "cotton",
-            image: "images/cotton-shirt1.jpg"
-        }
-    ];
-    
+
     let filteredProducts = [...products];
-    
-    // Filter by category
+
     if (categoryValue !== 'all') {
         filteredProducts = filteredProducts.filter(product => product.category === categoryValue);
     }
-    
-    // Sort products
+
     switch (sortValue) {
         case 'price-low':
             filteredProducts.sort((a, b) => a.price - b.price);
@@ -369,11 +286,8 @@ function filterProducts() {
         case 'name-desc':
             filteredProducts.sort((a, b) => b.name.localeCompare(a.name));
             break;
-        default:
-            // Default sorting (by ID or as they come from API)
-            break;
     }
-    
+
     displayProducts(filteredProducts);
 }
 
@@ -387,6 +301,11 @@ function addToCart(e) {
     const selectedSize = document.querySelector('input[name="size"]:checked')?.value || 'M';
     const selectedColor = document.querySelector('input[name="color"]:checked')?.value || 'Default';
     
+    if (!productId && window.location.pathname.includes("product-detail.html")) {
+        const urlParams = new URLSearchParams(window.location.search);
+        productId = parseInt(urlParams.get('id'));
+    }
+
     // Get product details
     const product = {
         id: productId,
@@ -501,8 +420,8 @@ function displayCartItems() {
                 <div class="cart-item-details">
                     <h3>${item.name}</h3>
                     <div class="item-options">
-                        <span>Size: ${item.size}</span>
-                        <span>Color: ${item.color}</span>
+                        <span class="badge-size">Size: ${item.size}</span>
+                        <span class="color-circle" style="background-color: ${item.color};"></span>
                     </div>
                 </div>
             </div>
@@ -661,122 +580,74 @@ function clearCart() {
 // يمكنك استدعاؤها عند الحاجة، مثلاً عند النقر على زر "تفريغ السلة"
 document.querySelector('.clear-cart-btn')?.addEventListener('click', clearCart);
 
-// Search functionality with suggestions
-function initSearch() {
-    const searchInput = document.querySelector('.search-bar input');
-    const searchResults = document.createElement('div');
-    searchResults.className = 'search-results';
-    searchBar.appendChild(searchResults);
-
-    // عرض الاقتراحات عند التركيز على حقل البحث
-    searchInput.addEventListener('focus', function() {
-        showDefaultSuggestions();
-    });
-
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.trim().toLowerCase();
-        
-        if (searchTerm.length === 0) {
-            showDefaultSuggestions();
-            return;
-        }
-
-        filterAndDisplayResults(searchTerm);
-    });
-
-    // إغلاق النتائج عند النقر خارجها
-    document.addEventListener('click', function(e) {
-        if (!searchBar.contains(e.target) && e.target !== searchIcon) {
-            searchResults.style.display = 'none';
-            if (window.innerWidth <= 768) {
-                searchBar.classList.remove('active');
-            }
-        }
-    });
-
-    // عرض الاقتراحات الافتراضية
-    function showDefaultSuggestions() {
-        const products = getSampleProducts();
-        displaySearchResults(products.slice(0, 5)); // عرض أول 5 منتجات كاقتراحات
+// Handle search input
+function handleSearchInput(e) {
+    const query = e.target.value.toLowerCase().trim();
+    
+    if (query.length === 0) {
+        searchResults.style.display = 'none';
+        return;
     }
+    
+    const filteredProducts = products.filter(product => 
+        product.name.toLowerCase().includes(query)
+    );
+    
+    displaySearchResults(filteredProducts);
+}
 
-    // تصفية المنتجات حسب البحث
-    function filterAndDisplayResults(searchTerm) {
-        const products = getSampleProducts();
-        const filteredProducts = products.filter(product => 
-            product.name.toLowerCase().includes(searchTerm)
-        );
-        
-        if (filteredProducts.length > 0) {
-            displaySearchResults(filteredProducts);
-        } else {
-            searchResults.innerHTML = '<div class="no-results">No products found</div>';
-            searchResults.style.display = 'block';
-        }
+// Display search results
+function displaySearchResults(results) {
+    searchResults.innerHTML = '';
+    
+    if (results.length === 0) {
+        searchResults.innerHTML = '<div class="no-results">No products found</div>';
+        searchResults.style.display = 'block';
+        return;
     }
-
-    // عرض نتائج البحث
-    function displaySearchResults(products) {
-        searchResults.innerHTML = '';
+    
+    results.forEach(product => {
+        const resultItem = document.createElement('div');
+        resultItem.className = 'search-result-item';
+        resultItem.innerHTML = `
+            <img src="${product.image}" alt="${product.name}">
+            <div class="search-result-info">
+                <h4>${product.name}</h4>
+                <p>$${product.price.toFixed(2)}</p>
+            </div>
+        `;
         
-        products.forEach(product => {
-            const resultItem = document.createElement('div');
-            resultItem.className = 'search-result-item';
-            resultItem.innerHTML = `
-                <img src="${product.image}" alt="${product.name}">
-                <div class="search-result-info">
-                    <h4>${product.name}</h4>
-                    <p>$${product.price.toFixed(2)}</p>
-                </div>
-            `;
-            resultItem.addEventListener('click', () => {
-                window.location.href = `product-detail.html?id=${product.id}`;
-            });
-            searchResults.appendChild(resultItem);
+        resultItem.addEventListener('click', () => {
+            window.location.href = `product-detail.html?id=${product.id}`;
         });
         
+        searchResults.appendChild(resultItem);
+    });
+    
+    searchResults.style.display = 'block';
+}
+
+// Show search results
+function showSearchResults() {
+    if (searchInput.value.trim().length > 0) {
         searchResults.style.display = 'block';
     }
+}
 
-    // الحصول على المنتجات العينة
-    function getSampleProducts() {
-        return [
-            {
-                id: 1,
-                name: "Silk Satin Pajama Set",
-                price: 89.99,
-                image: "images/silk-pajama1.jpg"
-            },
-            {
-                id: 2,
-                name: "Cotton Floral Pajama Set",
-                price: 49.99,
-                image: "images/cotton-pajama1.jpg"
-            },
-            {
-                id: 3,
-                name: "Lace Trim Pajama Set",
-                price: 65.99,
-                image: "images/lace-pajama1.jpg"
-            },
-            {
-                id: 4,
-                name: "Winter Flannel Pajama Set",
-                price: 79.99,
-                image: "images/winter-pajama1.jpg"
-            },
-            {
-                id: 5,
-                name: "Premium Silk Robe",
-                price: 99.99,
-                image: "images/silk-robe1.jpg"
-            },
-            {
-                id: 6,
-                name: "Organic Cotton Sleep Shirt",
-                price: 39.99,
-                image: "images/cotton-shirt1.jpg"
-            }
-        ];
+// Toggle search bar
+function toggleSearch(e) {
+    e.stopPropagation();
+    document.querySelector('.search').classList.toggle('active');
+    
+    if (document.querySelector('.search').classList.contains('active')) {
+        searchInput.focus();
+    } else {
+        searchInput.value = '';
+        searchResults.style.display = 'none';
     }
+}
+
+function toggleMobileSearch() {
+    const searchContainer = document.getElementById('mobileSearch');
+    searchContainer.classList.toggle('active');
 }

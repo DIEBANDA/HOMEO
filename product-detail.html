@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luxury Pajamas - Product Detail</title>
-    <link rel="stylesheet" href="style.css">
+    <title>HOMEO - Product Detail</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- Header -->
@@ -47,7 +48,7 @@
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
         <ul>
-            <li><a href="index.html" class="active">Home</a></li>
+            <li><a href="index.html">Home</a></li>
             <li><a href="products.html">All Products</a></li>
             <li class="submenu">
                 <a href="#">Categories <i class="fas fa-chevron-down"></i></a>
@@ -74,19 +75,18 @@
         <div class="product-detail-container">
             <div class="product-images">
                 <div class="main-image">
-                    <img id="main-product-image" src="images/silk-pajama1.jpg" alt="Product Image">
+                    <img id="main-product-image" src="" alt="Product Image">
                 </div>
                 <div class="thumbnail-images">
-                    <img src="images/silk-pajama1.jpg" alt="Thumbnail 1">
-                    <img src="images/silk-pajama2.jpg" alt="Thumbnail 2">
-                    <img src="images/silk-pajama3.jpg" alt="Thumbnail 3">
+                    <!-- Thumbnails will be loaded by JavaScript -->
                 </div>
             </div>
 
             <div class="product-info">
-                <h1 id="product-name">Silk Satin Pajama Set</h1>
+                <h1 id="product-name"></h1>
                 <div class="product-meta">
-                    <span class="product-price" id="product-price">$89.99</span>
+                    <span class="product-price" id="product-price"></span>
+                    <span class="old-price" id="old-price" style="display: none;"></span>
                     <span class="product-rating">
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
@@ -98,7 +98,7 @@
                 </div>
 
                 <div class="product-description">
-                    <p id="product-description">Experience ultimate comfort with our premium silk satin pajama set. Made from 100% pure mulberry silk, this set offers a luxurious feel against your skin while keeping you at the perfect temperature all night long.</p>
+                    <p id="product-description"></p>
                 </div>
 
                 <div class="product-options">
@@ -147,7 +147,7 @@
                 </div>
 
                 <div class="product-actions">
-                    <button class="btn add-to-cart" data-id="1">
+                    <button class="btn add-to-cart">
                         <i class="fas fa-shopping-cart"></i>
                         <span>Add to Cart</span>
                     </button>
@@ -156,11 +156,7 @@
                 <div class="product-details">
                     <h3>Details</h3>
                     <ul id="product-details-list">
-                        <li>100% Pure Mulberry Silk</li>
-                        <li>Breathable and temperature regulating</li>
-                        <li>Hypoallergenic and gentle on skin</li>
-                        <li>Machine washable (delicate cycle)</li>
-                        <li>Includes top and bottom</li>
+                        <!-- Details will be loaded by JavaScript -->
                     </ul>
                 </div>
 
@@ -203,7 +199,7 @@
                                     <i class="fas fa-star"></i>
                                 </span>
                             </div>
-                            <p class="review-text">These are the most comfortable pajamas I've ever worn! The silk is so soft and luxurious.</p>
+                            <p class="review-text">These are the most comfortable pajamas I've ever worn! The material is so soft and luxurious.</p>
                         </div>
                     </div>
                 </div>
@@ -213,38 +209,7 @@
         <div class="related-products">
             <h2>You May Also Like</h2>
             <div class="products-grid">
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="images/cotton-pajama1.jpg" alt="Cotton Pajama Set">
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-title">Cotton Floral Pajama Set</h3>
-                        <div class="product-price">
-                            <div>
-                                <span class="price">$49.99</span>
-                            </div>
-                            <button class="add-to-cart" data-id="2">
-                                <i class="fas fa-shopping-cart"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="images/lace-pajama1.jpg" alt="Lace Pajama Set">
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-title">Lace Trim Pajama Set</h3>
-                        <div class="product-price">
-                            <div>
-                                <span class="price">$65.99</span>
-                            </div>
-                            <button class="add-to-cart" data-id="3">
-                                <i class="fas fa-shopping-cart"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <!-- Related products will be loaded by JavaScript -->
             </div>
         </div>
     </main>

@@ -4,124 +4,160 @@ const sidebar = document.querySelector('.sidebar');
 const sidebarOverlay = document.querySelector('.sidebar-overlay');
 const submenuItems = document.querySelectorAll('.submenu > a');
 const cartCount = document.getElementById('cart-count');
-const searchIcon = document.querySelector('.search-icon');
-const searchBar = document.querySelector('.search-bar');
-const input = document.querySelector('.search-bar input');
+const searchBtn = document.getElementById('searchBtn');
+const searchInput = document.getElementById('searchInput');
+const searchInputWrapper = document.getElementById('searchInputWrapper');
 const sortSelect = document.getElementById('sort-by');
 const categorySelect = document.getElementById('category-filter');
+const checkoutBtn = document.querySelector('.checkout-btn');
+const checkoutModal = document.getElementById('checkoutModal');
+const checkoutClose = document.getElementById('checkoutClose');
+const nextToPayment = document.getElementById('nextToPayment');
+const backToShipping = document.getElementById('backToShipping');
+const placeOrder = document.getElementById('placeOrder');
+const returnToShop = document.getElementById('returnToShop');
+const checkoutSteps = document.querySelectorAll('.checkout-step');
+const checkoutForms = document.querySelectorAll('.checkout-form');
+const clearCartBtn = document.querySelector('.clear-cart-btn');
 
-// Sample products data
-const products = [
-    {
+// Product data
+const products = {
+    1: {
         id: 1,
         name: "Silk Satin Pajama Set",
         price: 89.99,
-        originalPrice: 109.99,
-        category: "silk",
-        image: "images/silk-pajama1.jpg",
+        oldPrice: 109.99,
+        description: "Experience ultimate comfort with our premium silk satin pajama set. Made from 100% pure mulberry silk, this set offers a luxurious feel against your skin while keeping you at the perfect temperature all night long.",
+        images: [
+            "images/silk-pajama1.jpg",
+            "images/silk-pajama2.jpg",
+            "images/silk-pajama3.jpg"
+        ],
+        details: [
+            "100% Pure Mulberry Silk",
+            "Breathable and temperature regulating",
+            "Hypoallergenic and gentle on skin",
+            "Machine washable (delicate cycle)",
+            "Includes top and bottom"
+        ],
+        category: "silk"
     },
-    {
+    2: {
         id: 2,
         name: "Cotton Floral Pajama Set",
         price: 49.99,
-        originalPrice: 59.99,
-        category: "cotton",
-        image: "images/cotton-pajama1.jpg",
+        oldPrice: 59.99,
+        description: "Soft and breathable cotton pajama set with beautiful floral pattern. Perfect for year-round comfort with its lightweight and airy fabric.",
+        images: [
+            "images/cotton-pajama1.jpg",
+            "images/cotton-pajama2.jpg",
+            "images/cotton-pajama3.jpg"
+        ],
+        details: [
+            "100% Organic Cotton",
+            "Lightweight and breathable",
+            "Machine washable",
+            "Elastic waistband for comfort",
+            "Includes top and bottom"
+        ],
+        category: "cotton"
     },
-    {
+    3: {
         id: 3,
         name: "Lace Trim Pajama Set",
         price: 65.99,
-        category: "lace",
-        image: "images/lace-pajama1.jpg",
+        description: "Elegant pajama set with delicate lace trim. Combines comfort with sophistication for a luxurious sleep experience.",
+        images: [
+            "images/lace-pajama1.jpg",
+            "images/lace-pajama2.jpg",
+            "images/lace-pajama3.jpg"
+        ],
+        details: [
+            "Silk and cotton blend",
+            "Delicate lace trim",
+            "Hand wash recommended",
+            "Adjustable drawstring waist",
+            "Includes camisole and shorts"
+        ],
+        category: "lace"
     },
-    {
+    4: {
         id: 4,
         name: "Winter Flannel Pajama Set",
         price: 79.99,
-        originalPrice: 99.99,
-        category: "cotton",
-        image: "images/winter-pajama1.jpg",
+        oldPrice: 99.99,
+        description: "Warm and cozy flannel pajama set perfect for cold winter nights. Soft brushed fabric for ultimate comfort.",
+        images: [
+            "images/winter-pajama1.jpg",
+            "images/winter-pajama2.jpg",
+            "images/winter-pajama3.jpg"
+        ],
+        details: [
+            "100% Brushed Cotton Flannel",
+            "Extra warm for winter",
+            "Machine washable",
+            "Button-up top with pocket",
+            "Elastic waistband"
+        ],
+        category: "cotton"
     },
-    {
+    5: {
         id: 5,
         name: "Premium Silk Robe",
         price: 99.99,
-        category: "silk",
-        image: "images/silk-robe1.jpg"
+        description: "Luxurious silk robe with a comfortable fit. Perfect for lounging at home in style and comfort.",
+        images: [
+            "images/silk-robe1.jpg",
+            "images/silk-robe2.jpg",
+            "images/silk-robe3.jpg"
+        ],
+        details: [
+            "100% Mulberry Silk",
+            "Belted closure",
+            "Deep pockets",
+            "Machine wash cold",
+            "Available in multiple colors"
+        ],
+        category: "silk"
     },
-    {
+    6: {
         id: 6,
         name: "Organic Cotton Sleep Shirt",
         price: 39.99,
-        category: "cotton",
-        image: "images/cotton-shirt1.jpg"
+        description: "Comfortable and breathable sleep shirt made from organic cotton. Loose fit for maximum comfort.",
+        images: [
+            "images/cotton-shirt1.jpg",
+            "images/cotton-shirt2.jpg",
+            "images/cotton-shirt3.jpg"
+        ],
+        details: [
+            "100% Organic Cotton",
+            "Breathable and lightweight",
+            "Machine washable",
+            "Knee-length design",
+            "Available in multiple colors"
+        ],
+        category: "cotton"
     }
-];
-
-//Create search results container
-const searchResults = document.createElement('div');
-searchResults.className = 'search-results';
-document.querySelector('.search').appendChild(searchResults);
-
-function highlightCurrentPage() {
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-    const navLinks = document.querySelectorAll('nav ul li a, .sidebar ul li a');
-    
-    navLinks.forEach(link => {
-        const linkPage = link.getAttribute('href').split('/').pop();
-        if (linkPage === currentPage) {
-            link.classList.add('active');
-        } else {
-            link.classList.remove('active');
-        }
-    });
-}
+};
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function () {
-    const authTabs = document.querySelectorAll('.auth-tab');
-    const authForms = document.querySelectorAll('.auth-form');
-
-    if (authTabs.length > 0) {
-        authTabs.forEach(tab => {
-            tab.addEventListener('click', function () {
-                authTabs.forEach(t => t.classList.remove('active'));
-                authForms.forEach(f => f.classList.remove('active'));
-
-                this.classList.add('active');
-
-                const tabName = this.getAttribute('data-tab');
-                document.getElementById(`${tabName}-form`).classList.add('active');
-            });
-        });
-    }
-
-    // ✅ تحديث زر "أضف إلى العربة" في صفحة التفاصيل
-    const detailAddToCartBtn = document.querySelector('.product-detail-container .add-to-cart');
-    const productIdFromURL = new URLSearchParams(window.location.search).get('id');
-
-    if (detailAddToCartBtn) {
-        // تأكيد ربط الحدث
-        detailAddToCartBtn.addEventListener('click', addToCart);
-
-        // ضبط data-id من رابط الصفحة
-        if (productIdFromURL) {
-            detailAddToCartBtn.setAttribute('data-id', productIdFromURL);
-        }
-    }
-
     updateCartCount();
     initEventListeners();
-    loadProducts();
     highlightCurrentPage();
     setupQuantityControls();
     initCartPage();
-
+    initCheckout();
+    setupProductLinks();
+    loadProductDetails();
+    
+    // Handle category filter from URL
     const urlParams = new URLSearchParams(window.location.search);
     const category = urlParams.get('category');
     if (category && categorySelect) {
         categorySelect.value = category;
+        filterProducts();
     }
 });
 
@@ -140,19 +176,11 @@ function initEventListeners() {
     // Search functionality
     if (searchInput) {
         searchInput.addEventListener('input', handleSearchInput);
-        searchInput.addEventListener('focus', showSearchResults);
     }
     
     if (searchBtn) {
         searchBtn.addEventListener('click', toggleSearch);
     }
-    
-    // Close search results when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.search')) {
-            searchResults.style.display = 'none';
-        }
-    });
     
     // Submenu toggle
     submenuItems.forEach(item => {
@@ -171,6 +199,12 @@ function initEventListeners() {
         categorySelect.addEventListener('change', filterProducts);
     }
 
+    // Add to cart buttons
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', addToCart);
+    });
+
+    // Category cards
     const categoryCards = document.querySelectorAll('.category-card');
     categoryCards.forEach(card => {
         card.addEventListener('click', function() {
@@ -178,6 +212,85 @@ function initEventListeners() {
             window.location.href = `products.html?category=${category}`;
         });
     });
+
+    // Clear cart button
+    if (clearCartBtn) {
+        clearCartBtn.addEventListener('click', clearCart);
+    }
+
+    // Thumbnail image clicks
+    document.querySelectorAll('.thumbnail-images img').forEach(thumb => {
+        thumb.addEventListener('click', function() {
+            const mainImage = document.getElementById('main-product-image');
+            mainImage.src = this.src;
+        });
+    });
+}
+
+// Setup product links to detail page
+function setupProductLinks() {
+    document.querySelectorAll('.product-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Don't redirect if clicking on add to cart button or its children
+            if (!e.target.closest('.add-to-cart')) {
+                const productId = this.getAttribute('data-id');
+                window.location.href = `product-detail.html?id=${productId}`;
+            }
+        });
+    });
+}
+
+// Load product details on product detail page
+function loadProductDetails() {
+    if (window.location.pathname.includes('product-detail.html')) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+        
+        if (productId && products[productId]) {
+            const product = products[productId];
+            const mainImage = document.getElementById('main-product-image');
+            const thumbnailsContainer = document.querySelector('.thumbnail-images');
+            
+            // Set main product info
+            document.getElementById('product-name').textContent = product.name;
+            document.getElementById('product-price').textContent = `$${product.price.toFixed(2)}`;
+            if (product.oldPrice) {
+                document.querySelector('.old-price').textContent = `$${product.oldPrice.toFixed(2)}`;
+                document.querySelector('.old-price').style.display = 'inline';
+            }
+            document.getElementById('product-description').textContent = product.description;
+            
+            // Set images
+            mainImage.src = product.images[0];
+            mainImage.alt = product.name;
+            
+            thumbnailsContainer.innerHTML = '';
+            product.images.forEach((img, index) => {
+                const thumb = document.createElement('img');
+                thumb.src = img;
+                thumb.alt = `${product.name} - ${index + 1}`;
+                thumb.addEventListener('click', function() {
+                    mainImage.src = this.src;
+                });
+                thumbnailsContainer.appendChild(thumb);
+            });
+            
+            // Set details list
+            const detailsList = document.getElementById('product-details-list');
+            detailsList.innerHTML = '';
+            product.details.forEach(detail => {
+                const li = document.createElement('li');
+                li.textContent = detail;
+                detailsList.appendChild(li);
+            });
+            
+            // Update add to cart button
+            const addToCartBtn = document.querySelector('.add-to-cart');
+            if (addToCartBtn) {
+                addToCartBtn.setAttribute('data-id', product.id);
+            }
+        }
+    }
 }
 
 // Toggle mobile menu
@@ -185,7 +298,6 @@ function toggleMobileMenu() {
     document.body.classList.toggle('sidebar-open');
     sidebar.classList.toggle('active');
     
-    // Change icon to X when menu is open
     if (sidebar.classList.contains('active')) {
         mobileMenuBtn.innerHTML = '<i class="fas fa-times"></i>';
     } else {
@@ -209,86 +321,68 @@ function updateCartCount() {
     }
 }
 
-// Load products
-function loadProducts() {
-    const productsGrid = document.querySelector('.products-grid');
-    if (!productsGrid) return;
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const selectedCategory = urlParams.get('category');
-
-    let filteredProducts = products;
-    if (selectedCategory && selectedCategory !== 'all') {
-        filteredProducts = products.filter(product => product.category === selectedCategory);
-    }
-
-    displayProducts(filteredProducts);
-}
-
-// Display products in grid
-function displayProducts(products) {
-    const productsGrid = document.querySelector('.products-grid');
-    if (!productsGrid) return;
-
-    productsGrid.innerHTML = '';
-
-    products.forEach(product => {
-        const productCard = document.createElement('div');
-        productCard.className = 'product-card';
-        productCard.setAttribute('data-id', product.id);
-
-        productCard.innerHTML = `
-            <div class="product-image">
-                <img src="${product.image}" alt="${product.name}">
-            </div>
-            <div class="product-info">
-                <div class="product-title-price">
-                    <h3 class="product-title">${product.name}</h3>
-                    <span class="price">$${product.price.toFixed(2)}</span>
-                </div>
-            </div>
-        `;
-
-        productsGrid.appendChild(productCard);
-    });
-
-    document.querySelectorAll('.product-card').forEach(card => {
-        card.addEventListener('click', function() {
-            const productId = this.getAttribute('data-id');
-            if (productId) {
-                window.location.href = `product-detail.html?id=${productId}`;
-            }
-        });
-    });
-}
-
 // Filter and sort products
 function filterProducts() {
-    const sortValue = sortSelect.value;
-    const categoryValue = categorySelect.value;
-
-    let filteredProducts = [...products];
-
+    const sortValue = sortSelect ? sortSelect.value : 'default';
+    const categoryValue = categorySelect ? categorySelect.value : 'all';
+    const productCards = document.querySelectorAll('.product-card');
+    
+    // Convert NodeList to Array for sorting
+    const productsArray = Array.from(productCards);
+    
+    // Filter by category
+    let filteredProducts = productsArray;
     if (categoryValue !== 'all') {
-        filteredProducts = filteredProducts.filter(product => product.category === categoryValue);
+        filteredProducts = productsArray.filter(product => 
+            product.getAttribute('data-category') === categoryValue
+        );
     }
-
+    
+    // Sort products
     switch (sortValue) {
         case 'price-low':
-            filteredProducts.sort((a, b) => a.price - b.price);
+            filteredProducts.sort((a, b) => {
+                const priceA = parseFloat(a.querySelector('.price').textContent.replace('$', ''));
+                const priceB = parseFloat(b.querySelector('.price').textContent.replace('$', ''));
+                return priceA - priceB;
+            });
             break;
         case 'price-high':
-            filteredProducts.sort((a, b) => b.price - a.price);
+            filteredProducts.sort((a, b) => {
+                const priceA = parseFloat(a.querySelector('.price').textContent.replace('$', ''));
+                const priceB = parseFloat(b.querySelector('.price').textContent.replace('$', ''));
+                return priceB - priceA;
+            });
             break;
         case 'name-asc':
-            filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+            filteredProducts.sort((a, b) => {
+                const nameA = a.querySelector('.product-title').textContent.toLowerCase();
+                const nameB = b.querySelector('.product-title').textContent.toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
             break;
         case 'name-desc':
-            filteredProducts.sort((a, b) => b.name.localeCompare(a.name));
+            filteredProducts.sort((a, b) => {
+                const nameA = a.querySelector('.product-title').textContent.toLowerCase();
+                const nameB = b.querySelector('.product-title').textContent.toLowerCase();
+                return nameB.localeCompare(nameA);
+            });
             break;
     }
-
-    displayProducts(filteredProducts);
+    
+    // Re-append sorted products
+    const productsGrid = document.querySelector('.products-grid');
+    if (productsGrid) {
+        productsGrid.innerHTML = '';
+        filteredProducts.forEach(product => {
+            productsGrid.appendChild(product);
+        });
+        
+        // Reattach event listeners after reordering
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', addToCart);
+        });
+    }
 }
 
 // Add to cart function
@@ -297,24 +391,24 @@ function addToCart(e) {
     e.stopPropagation();
     
     const productId = parseInt(this.getAttribute('data-id'));
-    const quantity = parseInt(document.getElementById('quantity')?.value) || 1;
+    const product = products[productId];
+    
+    if (!product) return;
+    
+    // Get selected options
     const selectedSize = document.querySelector('input[name="size"]:checked')?.value || 'M';
     const selectedColor = document.querySelector('input[name="color"]:checked')?.value || 'Default';
+    const quantity = parseInt(document.getElementById('quantity')?.value) || 1;
     
-    if (!productId && window.location.pathname.includes("product-detail.html")) {
-        const urlParams = new URLSearchParams(window.location.search);
-        productId = parseInt(urlParams.get('id'));
-    }
-
     // Get product details
-    const product = {
+    const cartProduct = {
         id: productId,
-        name: this.closest('.product-card')?.querySelector('.product-title')?.textContent || 
-             document.getElementById('product-name')?.textContent,
-        price: parseFloat(this.closest('.product-price')?.querySelector('.price')?.textContent.replace('$', '') || 
-              document.getElementById('product-price')?.textContent.replace('$', '')),
-        image: this.closest('.product-card')?.querySelector('img')?.src || 
-               document.getElementById('main-product-image')?.src
+        name: product.name,
+        price: product.price,
+        image: product.images[0],
+        quantity: quantity,
+        size: selectedSize,
+        color: selectedColor
     };
     
     // Get or initialize cart
@@ -330,16 +424,7 @@ function addToCart(e) {
     if (existingItemIndex >= 0) {
         cart[existingItemIndex].quantity += quantity;
     } else {
-        cart.push({
-            ...product,
-            quantity: quantity,
-            size: selectedSize,
-            color: selectedColor
-        });
-    }
-
-    if (window.location.pathname.includes('cart.html')) {
-        displayCartItems();
+        cart.push(cartProduct);
     }
     
     // Save to localStorage
@@ -350,12 +435,13 @@ function addToCart(e) {
     
     // Change button style temporarily
     const button = this;
+    const originalHTML = button.innerHTML;
     button.innerHTML = '<i class="fas fa-check"></i> Added!';
     button.style.backgroundColor = '#4CAF50';
     
     setTimeout(() => {
-        button.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
-        button.style.backgroundColor = 'var(--secondary-color)';
+        button.innerHTML = originalHTML;
+        button.style.backgroundColor = '';
     }, 2000);
     
     // Pulse animation for cart count
@@ -364,6 +450,11 @@ function addToCart(e) {
         setTimeout(() => {
             cartCount.style.transform = 'scale(1)';
         }, 300);
+    }
+    
+    // Update cart page if we're on it
+    if (document.getElementById('cart-items-list')) {
+        displayCartItems();
     }
 }
 
@@ -397,7 +488,7 @@ function displayCartItems() {
     
     if (cart.length === 0) {
         showEmptyCartMessage();
-        updateCartSummary(0);
+        updateCartSummaryEGP(0);
         return;
     }
     
@@ -413,45 +504,34 @@ function displayCartItems() {
         cartItem.className = 'cart-item';
         cartItem.dataset.index = index;
         cartItem.innerHTML = `
-            <div class="cart-item-product">
-                <div class="cart-item-image">
-                    <img src="${item.image}" alt="${item.name}">
+            <div class="cart-item-image">
+                <img src="${item.image}" alt="${item.name}">
+            </div>
+            <div class="cart-item-details">
+                <div class="cart-item-header">
+                    <h3 class="cart-item-title">${item.name}</h3>
+                    <button class="cart-item-remove" 
+                         data-id="${item.id}" data-size="${item.size}" data-color="${item.color}">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
-                <div class="cart-item-details">
-                    <h3>${item.name}</h3>
-                    <div class="item-options">
-                        <span class="badge-size">Size: ${item.size}</span>
-                        <span class="color-circle" style="background-color: ${item.color};"></span>
+                <div class="cart-item-content">
+                    <span class="cart-item-size">Size: ${item.size}</span>
+                    <div class="cart-item-quantity">
+                        <span>Quantity: </span>
+                        <input type="number" value="${item.quantity}" min="1" 
+                               data-id="${item.id}" data-size="${item.size}" data-color="${item.color}">
                     </div>
+                    <div class="cart-item-total">Total: EGP${itemTotal.toFixed(2)}</div>
                 </div>
             </div>
-            <div class="cart-item-price">$${item.price.toFixed(2)}</div>
-            <div class="cart-item-quantity">
-                <input type="number" value="${item.quantity}" min="1" 
-                       data-id="${item.id}" data-size="${item.size}" data-color="${item.color}">
-            </div>
-            <div class="cart-item-total">$${itemTotal.toFixed(2)}</div>
-            <div class="cart-item-remove" 
-                 data-id="${item.id}" data-size="${item.size}" data-color="${item.color}">
-                <i class="fas fa-trash"></i>
-            </div>
+            <div class="cart-item-price" style="display:none">EGP${item.price.toFixed(2)}</div>
         `;
         cartItemsList.appendChild(cartItem);
     });
     
-    updateCartSummary(subtotal);
+    updateCartSummaryEGP(subtotal);
     setupCartItemEvents();
-}
-
-function updateCartSummary(subtotal) {
-    const tax = subtotal * 0.1; // 10% tax for example
-    const shipping = subtotal > 0 ? 5.00 : 0;
-    const total = subtotal + tax + shipping;
-    
-    document.getElementById('cart-subtotal').textContent = `$${subtotal.toFixed(2)}`;
-    document.getElementById('cart-tax').textContent = `$${tax.toFixed(2)}`;
-    document.getElementById('cart-total').textContent = `$${total.toFixed(2)}`;
-    document.getElementById('cart-shipping').textContent = `$${shipping.toFixed(2)}`;
 }
 
 // Setup events for cart items
@@ -497,12 +577,37 @@ function updateCartItemQuantity(id, size, color, newQuantity) {
         displayCartItems();
         updateCartCount();
     } else if (newQuantity <= 0) {
-        // إذا كانت الكمية أقل من أو تساوي صفر، احذف العنصر
         removeCartItem(id, size, color);
     }
 }
 
 function removeCartItem(id, size, color) {
+    console.log("Removing item:", id, size, color); 
+
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    cart = cart.filter(item =>
+        !(
+            item.id === id &&
+            item.size.toLowerCase().trim() === size.toLowerCase().trim() &&
+            item.color.toLowerCase().trim() === color.toLowerCase().trim()
+        )
+    );
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    displayCartItems();
+    updateCartCount();
+
+    if (cart.length === 0) {
+        showEmptyCartMessage();
+    } else {
+        showToast('Item removed from cart');
+    }
+}
+
+/*function removeCartItem(id, size, color) {
+    console.log('Attempting to remove:', id, size, color);
+
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
     cart = cart.filter(item => 
         !(item.id === id && 
@@ -514,13 +619,12 @@ function removeCartItem(id, size, color) {
     displayCartItems();
     updateCartCount();
     
-    // إظهار رسالة تأكيد
     if (cart.length === 0) {
         showEmptyCartMessage();
     } else {
-        showToast('تم حذف المنتج من السلة');
+        showToast('Item removed from cart');
     }
-}
+}*/
 
 function showEmptyCartMessage() {
     const cartItemsList = document.getElementById('cart-items-list');
@@ -530,6 +634,7 @@ function showEmptyCartMessage() {
             <a href="products.html" class="btn">Continue Shopping</a>
         </div>
     `;
+    updateCartSummaryEGP(0);
 }
 
 function showToast(message) {
@@ -553,15 +658,11 @@ function showToast(message) {
 // Initialize cart page
 function initCartPage() {
     if (document.getElementById('cart-items-list')) {
-        // تحميل السلة من localStorage
         const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        
-        // إذا كانت السلة فارغة، عرض رسالة السلة الفارغة
         if (cart.length === 0) {
             showEmptyCartMessage();
-            updateCartSummary(0);
+            updateCartSummaryEGP(0);
         } else {
-            // إذا كانت تحتوي على عناصر، عرضها
             displayCartItems();
         }
     }
@@ -573,65 +674,29 @@ function clearCart() {
     
     if (window.location.pathname.includes('cart.html')) {
         showEmptyCartMessage();
-        updateCartSummary(0);
+        updateCartSummaryEGP(0);
+    }
+    
+    // Reset checkout form if it's open
+    if (checkoutModal && checkoutModal.classList.contains('active')) {
+        document.getElementById('shippingForm').reset();
+        setCheckoutStep(1);
     }
 }
-
-// يمكنك استدعاؤها عند الحاجة، مثلاً عند النقر على زر "تفريغ السلة"
-document.querySelector('.clear-cart-btn')?.addEventListener('click', clearCart);
 
 // Handle search input
 function handleSearchInput(e) {
     const query = e.target.value.toLowerCase().trim();
+    const productCards = document.querySelectorAll('.product-card');
     
-    if (query.length === 0) {
-        searchResults.style.display = 'none';
-        return;
-    }
-    
-    const filteredProducts = products.filter(product => 
-        product.name.toLowerCase().includes(query)
-    );
-    
-    displaySearchResults(filteredProducts);
-}
-
-// Display search results
-function displaySearchResults(results) {
-    searchResults.innerHTML = '';
-    
-    if (results.length === 0) {
-        searchResults.innerHTML = '<div class="no-results">No products found</div>';
-        searchResults.style.display = 'block';
-        return;
-    }
-    
-    results.forEach(product => {
-        const resultItem = document.createElement('div');
-        resultItem.className = 'search-result-item';
-        resultItem.innerHTML = `
-            <img src="${product.image}" alt="${product.name}">
-            <div class="search-result-info">
-                <h4>${product.name}</h4>
-                <p>$${product.price.toFixed(2)}</p>
-            </div>
-        `;
-        
-        resultItem.addEventListener('click', () => {
-            window.location.href = `product-detail.html?id=${product.id}`;
-        });
-        
-        searchResults.appendChild(resultItem);
+    productCards.forEach(card => {
+        const productName = card.querySelector('.product-title').textContent.toLowerCase();
+        if (productName.includes(query)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
     });
-    
-    searchResults.style.display = 'block';
-}
-
-// Show search results
-function showSearchResults() {
-    if (searchInput.value.trim().length > 0) {
-        searchResults.style.display = 'block';
-    }
 }
 
 // Toggle search bar
@@ -643,11 +708,243 @@ function toggleSearch(e) {
         searchInput.focus();
     } else {
         searchInput.value = '';
-        searchResults.style.display = 'none';
+        // Reset product display if on products page
+        const productCards = document.querySelectorAll('.product-card');
+        productCards.forEach(card => {
+            card.style.display = 'block';
+        });
     }
 }
 
-function toggleMobileSearch() {
-    const searchContainer = document.getElementById('mobileSearch');
-    searchContainer.classList.toggle('active');
+// Highlight current page in navigation
+function highlightCurrentPage() {
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const navLinks = document.querySelectorAll('nav ul li a, .sidebar ul li a');
+    
+    navLinks.forEach(link => {
+        const linkPage = link.getAttribute('href').split('/').pop();
+        if (linkPage === currentPage) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
 }
+
+// Initialize checkout modal
+function initCheckout() {
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', openCheckout);
+    }
+    
+    if (checkoutClose) {
+        checkoutClose.addEventListener('click', closeCheckout);
+    }
+    
+    if (nextToPayment) {
+        nextToPayment.addEventListener('click', goToPayment);
+    }
+    
+    if (backToShipping) {
+        backToShipping.addEventListener('click', goBackToShipping);
+    }
+    
+    if (placeOrder) {
+        placeOrder.addEventListener('click', completeOrder);
+    }
+    
+    if (returnToShop) {
+        returnToShop.addEventListener('click', closeCheckout);
+    }
+}
+
+// Open checkout modal
+function openCheckout() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
+    if (cart.length === 0) {
+        showToast('Your cart is empty. Please add items before checkout.');
+        return;
+    }
+    
+    // Update order summary in checkout
+    updateCheckoutSummary();
+    
+    // Show modal with animation
+    checkoutModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Reset to first step
+    setCheckoutStep(1);
+}
+
+// Close checkout modal
+function closeCheckout() {
+    checkoutModal.classList.remove('active');
+    document.body.style.overflow = '';
+    
+    // Reset to first step for next time
+    setCheckoutStep(1);
+}
+
+// Go to payment step
+function goToPayment() {
+    // Validate shipping form
+    const shippingForm = document.getElementById('shippingForm');
+    const requiredFields = shippingForm.querySelectorAll('[required]');
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.style.borderColor = 'red';
+            isValid = false;
+        } else {
+            field.style.borderColor = '';
+        }
+    });
+    
+    if (!isValid) {
+        showToast('Please fill in all required fields.');
+        return;
+    }
+    
+    // Update shipping summary
+    updateShippingSummary();
+    
+    // Go to payment step
+    setCheckoutStep(2);
+}
+
+// Go back to shipping step
+function goBackToShipping() {
+    setCheckoutStep(1);
+}
+
+// Complete order
+function completeOrder() {
+    // In a real app, you would process the payment here
+    // For demo, we'll just show the confirmation
+    
+    // Generate random order number
+    const orderNumber = '#' + Math.floor(10000 + Math.random() * 90000);
+    document.getElementById('orderNumber').textContent = orderNumber;
+    
+    // Go to confirmation step
+    setCheckoutStep(3);
+    
+    // Clear cart
+    clearCart();
+}
+
+// Set current checkout step
+function setCheckoutStep(step) {
+    // Update steps UI
+    checkoutSteps.forEach(stepEl => {
+        const stepNum = parseInt(stepEl.getAttribute('data-step'));
+        
+        stepEl.classList.remove('active', 'completed');
+        
+        if (stepNum < step) {
+            stepEl.classList.add('completed');
+        } else if (stepNum === step) {
+            stepEl.classList.add('active');
+        }
+    });
+    
+    // Show correct form
+    checkoutForms.forEach(form => {
+        form.classList.remove('active');
+    });
+    
+    document.querySelector(`.checkout-form[data-step="${step}"]`)?.classList.add('active');
+    document.getElementById(`step${step}Form`)?.classList.add('active');
+}
+
+// Update order summary in checkout
+function updateCartSummaryEGP(subtotal) {
+    const shipping = subtotal > 0 ? 80 : 0;
+    const total = subtotal + shipping;
+
+    const subtotalEl = document.getElementById('cart-subtotal');
+    const totalEl = document.getElementById('cart-total');
+    const shippingEl = document.getElementById('cart-shipping');
+
+    if (subtotalEl) subtotalEl.textContent = `EGP${subtotal.toFixed(2)}`;
+    if (totalEl) totalEl.textContent = `EGP${total.toFixed(2)}`;
+    if (shippingEl) shippingEl.textContent = `EGP${shipping.toFixed(2)}`;
+}
+
+// في دالة updateCheckoutSummary
+function updateCheckoutSummary() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let subtotal = 0;
+
+    cart.forEach(item => {
+        subtotal += item.price * item.quantity;
+    });
+
+    const shipping = 80;
+    const total = subtotal + shipping;
+
+    // داخل المودال
+    document.getElementById('checkout-subtotal').textContent = `EGP${subtotal.toFixed(2)}`;
+    document.getElementById('checkout-shipping').textContent = `EGP${shipping.toFixed(2)}`;
+    document.getElementById('checkout-total').textContent = `EGP${total.toFixed(2)}`;
+
+    document.getElementById('payment-subtotal').textContent = `EGP${subtotal.toFixed(2)}`;
+    document.getElementById('payment-shipping').textContent = `EGP${shipping.toFixed(2)}`;
+    document.getElementById('payment-total').textContent = `EGP${total.toFixed(2)}`;
+}
+
+
+// Update shipping information summary
+function updateShippingSummary() {
+    const firstName = document.getElementById('firstName').value;
+    const lastName = document.getElementById('lastName').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+    const address = document.getElementById('address').value;
+    const city = document.getElementById('city').value;
+    const district = document.getElementById('district').value;
+    const notes = document.getElementById('notes').value;
+    
+    let html = `
+        <div class="summary-item">
+            <span>Name:</span>
+            <span>${firstName} ${lastName}</span>
+        </div>
+        <div class="summary-item">
+            <span>Email:</span>
+            <span>${email}</span>
+        </div>
+        <div class="summary-item">
+            <span>Phone:</span>
+            <span>${phone}</span>
+        </div>
+        <div class="summary-item">
+            <span>Address:</span>
+            <span>${address}, ${district}, ${city}</span>
+        </div>
+    `;
+    
+    if (notes) {
+        html += `
+            <div class="summary-item">
+                <span>Notes:</span>
+                <span>${notes}</span>
+            </div>
+        `;
+    }
+    
+    document.getElementById('shippingSummary').innerHTML = html;
+}
+
+// Initialize checkout when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initCheckout();
+    
+    // Add data-step attributes to forms
+    document.getElementById('shippingForm').setAttribute('data-step', '1');
+    document.getElementById('paymentForm').setAttribute('data-step', '2');
+    document.getElementById('confirmationStep').setAttribute('data-step', '3');
+});
